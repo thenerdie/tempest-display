@@ -169,7 +169,7 @@
                 {
                     name: 'Temperature',
                     data: forecast.hourly.map(hour => hour.air_temperature).slice(0,24),
-                    lineWidth: 4,
+                    lineWidth: 10,
                     marker: {
                         enabled: false,
                     },
@@ -304,6 +304,7 @@
         justify-content: center;
         width: fit-content;
         gap: 50px;
+        margin-bottom: 20px;
     }
 
     hr {

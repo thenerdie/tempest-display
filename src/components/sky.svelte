@@ -25,7 +25,7 @@
 
         // Create a visual representation for the sun
         const sunGeometry = new THREE.SphereGeometry(10, 32, 32);
-        const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
+        const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xfaff86 });
         const sun = new THREE.Mesh(sunGeometry, sunMaterial);
         sun.position.set(100, 100, 100);
         scene.add(sun);
@@ -49,11 +49,13 @@
 
         camera.position.z = 5;
 
+        camera.lookAt(sun.position.x, sun.position.y, sun.position.z)
+
         const animate = () => {
             requestAnimationFrame(animate);
 
-            // stars.rotation.x += 0.0001;
-            stars.rotation.y += 0.0001;
+            if (stars)
+                stars.rotation.y += 0.0001;
 
             renderer.render(scene, camera);
         };
