@@ -1,19 +1,15 @@
 <script>
+    export let nighttime
+
     import { onMount } from 'svelte';
-    import * as THREE from 'three';
+    // import * as THREE from 'three';
     import mapboxgl from "mapbox-gl"
-    import { Time } from 'highcharts';
+    // import { Time } from 'highcharts';
 
     let container;
 
     onMount(async () => {
-        const radarData = await fetch("https://api.rainviewer.com/public/weather-maps.json")
-          .then(res => res.json())
-
-        const past = radarData.radar.past
-        const recentUrl = past[past.length - 1].path
-
-        const { Threebox } = await import("threebox-plugin")
+        // const { Threebox } = await import("threebox-plugin")
 
         mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_KEY
 
@@ -21,9 +17,9 @@
 
         const map = new mapboxgl.Map({
             container: 'container',
-            style: 'mapbox://styles/mapbox/satellite-streets-v12',
+            style: `mapbox://styles/mapbox/${nighttime ? "dark-v9" : "satellite-streets-v12"}`,
             center: coordinates,
-            zoom: 9,
+            zoom: 12,
             pitch: 75,
             bearing: 0,
             interactive: false,
@@ -36,7 +32,7 @@
             const deltaTime = currentTime - lastTime;
             lastTime = currentTime;
 
-            bearing += (deltaTime / 1000) * 0.9
+            bearing += (deltaTime / 1000) * 0.8
 
             map.setBearing(bearing)
             
@@ -45,9 +41,22 @@
 
         requestAnimationFrame(update);
 
-        map.on('style.load', () => {
+        const LAYER_NAME = "radar"
+
+        async function refreshRadar() {
+            if (map.getLayer(LAYER_NAME)) {
+                map.removeLayer(LAYER_NAME);
+                map.removeSource(LAYER_NAME);
+            }
+
+            const radarData = await fetch("https://api.rainviewer.com/public/weather-maps.json")
+                .then(res => res.json())
+
+            const past = radarData.radar.past
+            const recentUrl = past[past.length - 1].path
+
             map.addLayer({
-                id: "rainviewer",
+                id: LAYER_NAME,
                 type: "raster",
                 source: {
                     type: "raster",
@@ -62,7 +71,10 @@
                 minzoom: 0,
                 maxzoom: 20,
             });
-        });
+        }
+
+        map.on('style.load', refreshRadar);
+        setInterval(refreshRadar, 60000);
     });
 </script>
 

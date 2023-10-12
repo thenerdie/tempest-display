@@ -1,5 +1,5 @@
 <script>
-    import StarrySky from '../components/sky.svelte';
+    import Radar from '../components/radar.svelte';
 
     import { onMount } from 'svelte';
     import { format, isBefore, isAfter } from 'date-fns'
@@ -143,11 +143,8 @@
         return data
     }
 
-    onMount(async () => {
-        const data = await getWeatherData()
-        const { forecast } = data
-
-        const Highcharts = await import('highcharts')
+    function generateChartOptions(forecast) {
+        const HOURS = 24
 
         const chartOptions = {
             chart: {
@@ -156,6 +153,12 @@
                 backgroundColor: "#0e293357",
                 style: {
                     color: "blue"
+                },
+                options3d: {
+                    enabled: true,
+                    alpha: 25,
+                    beta: 25,
+                    depth: 70
                 }
             },
             title: {
@@ -164,13 +167,13 @@
                     "font-family": "Gabarito"
                 }
             },
-            xAxis: { categories: forecast.hourly.map(hour => format(hour.time * 1000, "h:mm aa")).slice(0,48) },
+            xAxis: { categories: forecast.hourly.map(hour => format(hour.time * 1000, "h:mm aa")).slice(0, HOURS) },
             yAxis: { title: { text: 'Temperature' } },
             series: [
                 {
                     name: 'Temperature',
-                    data: forecast.hourly.map(hour => hour.air_temperature).slice(0,48),
-                    lineWidth: 10,
+                    data: forecast.hourly.map(hour => hour.air_temperature).slice(0, HOURS),
+                    lineWidth: 5,
                     marker: {
                         enabled: false,
                     },
@@ -212,25 +215,42 @@
                         }
                     ]
                 },
-                {
-                    name: 'Humidity',
-                    data: forecast.hourly.map(hour => hour.relative_humidity).slice(0,48),
-                    lineWidth: 5,
-                    marker: {
-                        enabled: false,
-                    },
-                },
             ]
         };
 
-        chart = Highcharts.chart(chartOptions);
+        return chartOptions
+    }
+
+    function refreshChart(chart, data) {
+        const options = generateChartOptions(data)
+
+        chart.update(options)
+    }
+
+    function refreshAll(data, chart) {
+        refresh(data)
+        refreshChart(chart, data.forecast)
+    }
+
+    onMount(async () => {
+        const data = await getWeatherData()
+
+        const Highcharts = await import('highcharts')
+
+        chart = Highcharts.chart(generateChartOptions(data.forecast));
 
         setInterval(() => {
             time = format(Date.now(), "h:mm:ss aa")
             date = format(Date.now(), "iiii, MMMM do, yyyy")
         }, 0.5)
 
-        refresh(data)
+        refreshAll(data, chart)
+
+        setInterval(async () => {
+            const data = await getWeatherData()
+
+            refreshAll(data, chart)
+        }, 60000)
     })
 </script>
 
@@ -240,11 +260,16 @@
 </div>
 
 <div class="centered sky-gradient">
-    <StarrySky></StarrySky>
-    <h1 id="temperature">{temperature}°</h1>
-    <h2 id="conditions">{emoji} {conditions}</h2>
+    <Radar nighttime></Radar>
+    <div id="conditions">
+        <p>{emoji} {temperature}°</p>
+        <hr>
+        <p>💧 {humidity} %</p>
+        <hr>
+        <p>💨 {windSpeed} MPH {windDirection}</p>
+    </div>
 
-    <div id="extended">
+    <!-- <div id="extended">
         <div class="extended-item">
             <h2>Humidity</h2>
             <h4>{humidity}%</h4>
@@ -252,14 +277,14 @@
         <hr>
         <div class="extended-item">
             <h2>Barometric Pressure</h2>
-            <h4>{pressure.toFixed(0)} mb and {pressureTrend}</h4>
+            <h4></h4>
         </div>
         <hr>
         <div class="extended-item">
             <h2>Wind</h2>
-            <h4>{windSpeed} MPH {windDirection}</h4>
+            <h4></h4>
         </div>
-    </div>
+    </div> -->
     
     <div id="info-grid">
         <div id="chart" class="widget"></div>
@@ -291,6 +316,10 @@
         font-size: x-large;
         margin-bottom: -20px;
     }
+    
+    #clock > * {
+        color: #d7d7d7;
+    }
 
     .sky-gradient {
         background: linear-gradient(to bottom, #0d0d0d, #171717);
@@ -304,8 +333,8 @@
 
     * {
         font-family: 'Gabarito', sans-serif;
-        color: #e2e2e2;
-        text-shadow: rgb(0, 0, 0) 1px 0 5px;
+        color: #ffffff;
+        text-shadow: rgb(0, 0, 0) 1px 0 2px;
     }
 
     #chart {
@@ -323,38 +352,29 @@
         gap: 15px;
         margin-left: auto;
         margin-right: auto;
+        margin-top: 16%;
         justify-content: center;
         width: fit-content;
         /* height: 30%; */
     }
-
-
-    #temperature {
-        font-size: 125px;
-        margin-bottom: -15px;
-        margin-top: 15px;
-    }
-
+    
     #conditions {
-        margin-bottom: 30px;
-        font-size: 24px;
-    }
-
-    #extended {
+        margin-bottom: 0px;
+        font-size: 25px;
         display: flex;
         flex-direction: row;
         margin-left: auto;
         margin-right: auto;
         justify-content: center;
         width: fit-content;
-        gap: 50px;
+        gap: 15px;
         margin-bottom: 15px;
-        margin-top: -15px;
+        margin-top: 10px;
     }
 
-    .precip {
-        /* color: #0e293357; */
-    }
+    /* .precip {
+        color: #0e293357;
+    } */
 
     .precip-icon {
         font-size: 10px;
@@ -370,16 +390,16 @@
     }
 
     hr {
-        border-color: rgba(67, 95, 172, 0.308);
+        border-color: rgba(148, 148, 148, 0.308);
     }
 
-    .extended-item > :not(:last-child) {
+    /* .extended-item > :not(:last-child) {
         margin-bottom: -10px;
-    }
+    } */
 
     .widget {
         border-radius: 10px;
-        background-color: #0e293357;
+        background-color: #07141895;
     }
 
     .daily-forecast {
