@@ -16,6 +16,7 @@
     let daily = []
 
     let time
+    let date
 
     let blueSkies = true
 
@@ -114,7 +115,7 @@
 
         nighttime = isAfter(now, sunset) || isBefore(now, sunrise)
 
-        setChartColor(nighttime ? "#a7a6bf" : "#153845")    
+        setChartColor("#e2e2e2")
 
         current.emoji = conditionToEmoji[current.conditions]
 
@@ -123,7 +124,7 @@
         let minTemp = Math.min(...daily.map(day => day.air_temp_low));
         let maxTemp = Math.max(...daily.map(day => day.air_temp_high));
 
-        const divMaxHeight = 105;
+        const divMaxHeight = 80;
 
         daily.forEach(day => {
             day._height = ((day.air_temp_high - day.air_temp_low) / (maxTemp - minTemp)) * divMaxHeight;
@@ -163,12 +164,12 @@
                     "font-family": "Gabarito"
                 }
             },
-            xAxis: { categories: forecast.hourly.map(hour => format(hour.time * 1000, "h:mm aa")).slice(0,24) },
+            xAxis: { categories: forecast.hourly.map(hour => format(hour.time * 1000, "h:mm aa")).slice(0,48) },
             yAxis: { title: { text: 'Temperature' } },
             series: [
                 {
                     name: 'Temperature',
-                    data: forecast.hourly.map(hour => hour.air_temperature).slice(0,24),
+                    data: forecast.hourly.map(hour => hour.air_temperature).slice(0,48),
                     lineWidth: 10,
                     marker: {
                         enabled: false,
@@ -211,20 +212,32 @@
                         }
                     ]
                 },
+                {
+                    name: 'Humidity',
+                    data: forecast.hourly.map(hour => hour.relative_humidity).slice(0,48),
+                    lineWidth: 5,
+                    marker: {
+                        enabled: false,
+                    },
+                },
             ]
         };
 
         chart = Highcharts.chart(chartOptions);
 
         setInterval(() => {
-            time = format(Date.now(), "h:mm:ss | iiii")
+            time = format(Date.now(), "h:mm:ss aa")
+            date = format(Date.now(), "iiii, MMMM do, yyyy")
         }, 0.5)
 
         refresh(data)
     })
 </script>
 
-<h1 id="time">{time}</h1>
+<div id="clock">
+    <h1 id="time">{time}</h1>
+    <h3>{date}</h3>
+</div>
 
 <div class="centered sky-gradient">
     <StarrySky></StarrySky>
@@ -249,12 +262,14 @@
     </div>
     
     <div id="info-grid">
-        <div id="chart"></div>
-        <div class="daily-forecast">
+        <div id="chart" class="widget"></div>
+        <div class="widget daily-forecast">
             {#each daily as day}
                 <div class="day">
-                    <h1>{conditionToEmoji[day.conditions]}</h1>
-                    <h2>{format(day.day_start_local * 1000, "iiiiii")}</h2>
+                    <h2 class="day-abbr">{format(day.day_start_local * 1000, "iiiiii")}</h2>
+                    <h1 class="daily-icon">{conditionToEmoji[day.conditions]}</h1>
+                    <p class="precip-icon">💧</p>
+                    <p class="precip">{day.precip_probability}%</p>
                     <p class="high-temp" style="margin-top: {day._margintop + "px"}">{day.air_temp_high}°</p>
                     <div class="rounded" style="height: {day._height + 'px'};"></div>
                     <p class="low-temp">{day.air_temp_low}°</p>
@@ -265,6 +280,34 @@
 </div>
 
 <style>
+    #clock {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        margin-left: 10px;
+    }
+
+    #time {
+        font-size: x-large;
+        margin-bottom: -20px;
+    }
+
+    .sky-gradient {
+        background: linear-gradient(to bottom, #0d0d0d, #171717);
+        height: 100vh;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: -1;
+    }
+
+    * {
+        font-family: 'Gabarito', sans-serif;
+        color: #e2e2e2;
+        text-shadow: rgb(0, 0, 0) 1px 0 5px;
+    }
+
     #chart {
         width: 50%;
         border-radius: 10px;
@@ -282,17 +325,18 @@
         margin-right: auto;
         justify-content: center;
         width: fit-content;
+        /* height: 30%; */
     }
 
 
     #temperature {
-        font-size: 150px;
+        font-size: 125px;
         margin-bottom: -15px;
         margin-top: 15px;
     }
 
     #conditions {
-        margin-bottom: 40px;
+        margin-bottom: 30px;
         font-size: 24px;
     }
 
@@ -304,7 +348,25 @@
         justify-content: center;
         width: fit-content;
         gap: 50px;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
+        margin-top: -15px;
+    }
+
+    .precip {
+        /* color: #0e293357; */
+    }
+
+    .precip-icon {
+        font-size: 10px;
+        margin-bottom: -7px;
+    }
+
+    .daily-icon {
+        margin-bottom: -3px;
+    }
+
+    .day-abbr {
+        margin-bottom: -10px;
     }
 
     hr {
@@ -315,15 +377,19 @@
         margin-bottom: -10px;
     }
 
+    .widget {
+        border-radius: 10px;
+        background-color: #0e293357;
+    }
+
     .daily-forecast {
         display: flex;
         flex-direction: row;
         justify-content: space-around;
         width: fit-content;
-        height: 50%;
-        background-color: #0e293357;
-        padding: 30px;
-        border-radius: 10px;
+        height: fit-content;
+        padding: 20px;
+        gap: -20px;
         margin: auto;
     }
 
@@ -331,7 +397,8 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin: 0 -5px;
+        margin-top: -15px;
+        margin-bottom: -15px;
         padding: 10px;
     }
 
@@ -345,58 +412,5 @@
         font-size: 18px;
     }
 </style>
-
-{#if nighttime}
-    <style>
-        .sky-gradient {
-            background: linear-gradient(to bottom, #0d0d0d, #171717);
-            height: 100vh;
-            width: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: -1;
-        }
-
-        * {
-            font-family: 'Gabarito', sans-serif;
-            color: #a7a6bf;
-        }
-    </style>
-{:else if blueSkies}
-    <style>
-        .sky-gradient {
-            background: linear-gradient(to bottom, #6dc2e4, #dadfe0);
-            height: 100vh;
-            width: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: -1;
-        }
-
-        * {
-            font-family: 'Gabarito', sans-serif;
-            color: #153845;
-        }
-    </style>
-{:else}
-    <style>
-        .sky-gradient {
-            background: linear-gradient(to bottom, #7a7f81, #dadfe0);
-            height: 100vh;
-            width: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: -1;
-        }
-
-        * {
-            font-family: 'Gabarito', sans-serif;
-            color: #153845;
-        }
-    </style>
-{/if}
 
 <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@800&display=swap" rel="stylesheet">

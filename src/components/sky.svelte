@@ -1,75 +1,77 @@
 <script>
     import { onMount } from 'svelte';
     import * as THREE from 'three';
+    import mapboxgl from "mapbox-gl"
+    import { Time } from 'highcharts';
 
     let container;
 
-    onMount(() => {
-        // Initialize the scene, camera, and renderer
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
+    onMount(async () => {
+        const radarData = await fetch("https://api.rainviewer.com/public/weather-maps.json")
+          .then(res => res.json())
 
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        container.appendChild(renderer.domElement);
+        const past = radarData.radar.past
+        const recentUrl = past[past.length - 1].path
 
-        const skyGeometry = new THREE.SphereGeometry(1000, 32, 32);
-        const skyMaterial = new THREE.MeshBasicMaterial({ color: 0x87CEEB, side: THREE.BackSide });
-        const sky = new THREE.Mesh(skyGeometry, skyMaterial);
-        scene.add(sky);
+        const { Threebox } = await import("threebox-plugin")
 
-        // Create the sun using a point light
-        const sunLight = new THREE.PointLight(0xffffff, 1, 0);
-        sunLight.position.set(100, 100, 100);
-        scene.add(sunLight);
+        mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_KEY
 
-        // Create a visual representation for the sun
-        const sunGeometry = new THREE.SphereGeometry(10, 32, 32);
-        const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xfaff86 });
-        const sun = new THREE.Mesh(sunGeometry, sunMaterial);
-        sun.position.set(100, 100, 100);
-        scene.add(sun);
+        const coordinates = [-81.2081, 28.67]
 
-        const geometry = new THREE.BufferGeometry();
-        const vertices = [];
+        const map = new mapboxgl.Map({
+            container: 'container',
+            style: 'mapbox://styles/mapbox/satellite-streets-v12',
+            center: coordinates,
+            zoom: 9,
+            pitch: 75,
+            bearing: 0,
+            interactive: false,
+        });
 
-        for (let i = 0; i < 10000; i++) {
-            const x = (Math.random() - 0.5) * 2000;
-            const y = (Math.random() - 0.5) * 2000;
-            const z = (Math.random() - 0.5) * 2000;
-            vertices.push(x, y, z);
+        let bearing = 0
+        let lastTime = 0;
+
+        function update(currentTime) {
+            const deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+
+            bearing += (deltaTime / 1000) * 0.9
+
+            map.setBearing(bearing)
+            
+            requestAnimationFrame(update);
         }
 
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        requestAnimationFrame(update);
 
-        const material = new THREE.PointsMaterial({ color: 0xFFFFFF, size: 0.1 });
-
-        const stars = new THREE.Points(geometry, material);
-        scene.add(stars);
-
-        camera.position.z = 5;
-
-        camera.lookAt(sun.position.x, sun.position.y, sun.position.z)
-
-        const animate = () => {
-            requestAnimationFrame(animate);
-
-            if (stars)
-                stars.rotation.y += 0.0001;
-
-            renderer.render(scene, camera);
-        };
-
-        animate();
+        map.on('style.load', () => {
+            map.addLayer({
+                id: "rainviewer",
+                type: "raster",
+                source: {
+                    type: "raster",
+                    tiles: [
+                        radarData.host + recentUrl + '/256/{z}/{x}/{y}/2/0_0.png'
+                    ],
+                    tileSize: 256
+                },
+                paint: {
+                    "raster-opacity": 0.6,
+                },
+                minzoom: 0,
+                maxzoom: 20,
+            });
+        });
     });
 </script>
 
-<div bind:this={container}></div>
+<div id="container" bind:this={container}></div>
 
 <style>
     div {
         width: 100%;
-        height: 100vh;
+        height: 100%;
         position: fixed;
         z-index: -2;
     }
