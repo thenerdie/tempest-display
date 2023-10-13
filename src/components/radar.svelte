@@ -73,7 +73,37 @@
             });
         }
 
-        map.on('style.load', refreshRadar);
+        map.on('style.load', () => {
+            map.addSource('point', {
+                'type': 'geojson',
+                'data': {
+                    'type': 'FeatureCollection',
+                    'features': [{
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': coordinates // Longitude, Latitude
+                        }
+                    }]
+                }
+            });
+
+            // map.addLayer({
+            //     'id': 'point-text',
+            //     'type': 'symbol',
+            //     'source': 'point',
+            //     'layout': {
+            //         'text-field': 'Hello, World!', // The text you want to display
+            //         'text-size': 50 // Text size
+            //     },
+            //     'paint': {
+            //         'text-color': '#ffffff',
+            //     }
+            // });
+
+
+            refreshRadar()
+        });
         setInterval(refreshRadar, 60000);
     });
 </script>

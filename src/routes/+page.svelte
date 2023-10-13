@@ -124,7 +124,7 @@
         let minTemp = Math.min(...daily.map(day => day.air_temp_low));
         let maxTemp = Math.max(...daily.map(day => day.air_temp_high));
 
-        const divMaxHeight = 80;
+        const divMaxHeight = 90;
 
         daily.forEach(day => {
             day._height = ((day.air_temp_high - day.air_temp_low) / (maxTemp - minTemp)) * divMaxHeight;
@@ -260,7 +260,7 @@
 </div>
 
 <div class="centered sky-gradient">
-    <Radar nighttime></Radar>
+    <Radar nighttime={nighttime}></Radar>
     <div id="conditions">
         <p>{emoji} {temperature}°</p>
         <hr>
@@ -338,7 +338,7 @@
     }
 
     #chart {
-        width: 50%;
+        width: 40%;
         border-radius: 10px;
     }
 
@@ -352,10 +352,10 @@
         gap: 15px;
         margin-left: auto;
         margin-right: auto;
-        margin-top: 16%;
+        margin-top: 21%;
         justify-content: center;
         width: fit-content;
-        /* height: 30%; */
+        height: 46%;
     }
     
     #conditions {
@@ -382,10 +382,12 @@
     }
 
     .daily-icon {
+        font-size: 15px;
         margin-bottom: -3px;
     }
 
     .day-abbr {
+        font-size: 20px;
         margin-bottom: -10px;
     }
 
@@ -429,7 +431,7 @@
     }
 
     .high-temp, .low-temp {
-        font-size: 18px;
+        font-size: 14px;
     }
 </style>
 
