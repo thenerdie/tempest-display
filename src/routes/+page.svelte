@@ -143,36 +143,68 @@
         return data
     }
 
-    function generateChartOptions(forecast) {
-        const HOURS = 24
+    function generateHourlyChartOptions(forecast) {
+        const HOURS = 24 * 2
 
         const chartOptions = {
             chart: {
                 type: 'spline', 
                 renderTo: 'chart',
-                backgroundColor: "#0e293357",
+                backgroundColor: "#00000000",
                 style: {
                     color: "blue"
                 },
                 options3d: {
-                    enabled: true,
+                    enabled: false,
                     alpha: 25,
-                    beta: 25,
-                    depth: 70
+                    beta: 2,
+                    depth: 100
                 }
             },
             title: {
-                text: 'Hourly Forecast',
+                text: 'Forecast',
                 style: {
                     "font-family": "Gabarito"
                 }
             },
-            xAxis: { categories: forecast.hourly.map(hour => format(hour.time * 1000, "h:mm aa")).slice(0, HOURS) },
-            yAxis: { title: { text: 'Temperature' } },
+            xAxis: {
+                categories: forecast.hourly.map(hour => format(hour.time * 1000, "EEE h aa")).slice(0, HOURS),
+                tickInterval: 8,
+            },
+            yAxis: [
+                { title: { text: 'Temperature' } },
+                {
+                    title: {
+                        text: 'Humidity'
+                    },
+                    opposite: true,
+                    min: 0,
+                    max: 100,
+                },
+                {
+                    title: {
+                        text: 'Chance of Precipitation'
+                    },
+                    min: 0,
+                    max: 100,
+                },
+                {
+                    title: {
+                        text: 'Wind'
+                    },
+                    min: 0,
+                }
+            ],
             series: [
                 {
                     name: 'Temperature',
-                    data: forecast.hourly.map(hour => hour.air_temperature).slice(0, HOURS),
+                    data: forecast.hourly.map((hour, hourNum) => {
+                        return {
+                            name: conditionToEmoji[hour.conditions],
+                            x: hourNum,
+                            y: hour.air_temperature,
+                        }
+                    }).slice(0, HOURS),
                     lineWidth: 5,
                     marker: {
                         enabled: false,
@@ -213,7 +245,53 @@
                         {
                             color: '#ff0000'  // Extremely Hot, Red
                         }
-                    ]
+                    ],
+                    dataLabels: {
+                        enabled: true,
+                        format: "{point.name}",
+                        style: {
+                            fontSize: "20px"
+                        }
+                    },
+                    yAxis: 0,
+                    depth: 25,
+                    zIndex: 0,
+                },
+                {
+                    name: 'Humidity',
+                    data: forecast.hourly.map(hour => hour.relative_humidity).slice(0, HOURS),
+                    lineWidth: 5,
+                    marker: {
+                        enabled: false,
+                    },
+                    yAxis: 1,
+                    depth: 75,
+                    zIndex: 1,
+                },
+                {
+                    name: 'Chance of Precipitation',
+                    type: "areaspline",
+                    data: forecast.hourly.map(hour => hour.precip_probability).slice(0, HOURS),
+                    lineWidth: 5,
+                    marker: {
+                        enabled: false,
+                    },
+                    color: "#59eeff",
+                    fillColor: "#46c1cf",
+                    yAxis: 2,
+                    depth: 75,
+                    zIndex: 2,
+                },
+                {
+                    name: 'Wind',
+                    data: forecast.hourly.map(hour => hour.wind_avg).slice(0, HOURS),
+                    lineWidth: 5,
+                    marker: {
+                        enabled: false,
+                    },
+                    yAxis: 3,
+                    depth: 75,
+                    zIndex: 1,
                 },
             ]
         };
@@ -222,7 +300,7 @@
     }
 
     function refreshChart(chart, data) {
-        const options = generateChartOptions(data)
+        const options = generateHourlyChartOptions(data)
 
         chart.update(options)
     }
@@ -235,9 +313,12 @@
     onMount(async () => {
         const data = await getWeatherData()
 
-        const Highcharts = await import('highcharts')
+        const Highcharts = await import("highcharts")
+        const Highcharts3D = await import("highcharts/highcharts-3d")
 
-        chart = Highcharts.chart(generateChartOptions(data.forecast));
+        Highcharts3D.default(Highcharts)
+
+        chart = Highcharts.chart(generateHourlyChartOptions(data.forecast));
 
         setInterval(() => {
             time = format(Date.now(), "h:mm:ss aa")
@@ -286,8 +367,8 @@
         </div>
     </div> -->
     
-    <div id="info-grid">
-        <div id="chart" class="widget"></div>
+    <div id="chart" class="widget"></div>
+    <!-- <div id="info-grid">
         <div class="widget daily-forecast">
             {#each daily as day}
                 <div class="day">
@@ -301,7 +382,7 @@
                 </div>
             {/each}
         </div>
-    </div>
+    </div> -->
 </div>
 
 <style>
@@ -338,15 +419,23 @@
     }
 
     #chart {
-        width: 40%;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin-bottom: 20px;
         border-radius: 10px;
+        height: 40%;
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .centered {
         text-align: center;
     }
 
-    #info-grid {
+    /* #info-grid {
         display: flex;
         flex-direction: row;
         gap: 15px;
@@ -356,7 +445,7 @@
         justify-content: center;
         width: fit-content;
         height: 46%;
-    }
+    } */
     
     #conditions {
         margin-bottom: 0px;
@@ -401,7 +490,7 @@
 
     .widget {
         border-radius: 10px;
-        background-color: #07141895;
+        background-color: #0000002d;
     }
 
     .daily-forecast {
