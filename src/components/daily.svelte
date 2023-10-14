@@ -19,59 +19,7 @@
     let chart
     let render
 
-    function setChartColor(color) {
-        chart?.update({
-            chart: {
-                style: {
-                    color: color
-                }
-            },
-            title: {
-                style: {
-                    color: color
-                }
-            },
-            subtitle: {
-                style: {
-                    color: color
-                }
-            },
-            xAxis: {
-                labels: {
-                    style: {
-                        color: color
-                    }
-                },
-                title: {
-                    style: {
-                        color: color
-                    }
-                }
-            },
-            yAxis: {
-                labels: {
-                    style: {
-                        color: color
-                    }
-                    },
-                    title: {
-                    style: {
-                        color: color
-                    }
-                }
-            },
-            legend: {
-                itemStyle: {
-                    color: color
-                }
-            },
-            tooltip: {
-                style: {
-                    color: color
-                }
-            },
-        });
-    }
+    
 
     function generateChartOptions() {
         const chartOptions = {
@@ -80,7 +28,7 @@
                 renderTo: render,
                 backgroundColor: "#00000000",
                 style: {
-                    color: "blue"
+                    color: "white"
                 },
                 options3d: {
                     enabled: false,
@@ -92,11 +40,31 @@
             title: {
                 text: 'Forecast',
                 style: {
-                    "font-family": "Gabarito"
+                    "font-family": "Gabarito",
+                    "color": "white"
                 }
             },
             xAxis: {
-                categories: daily.map(day => format(day.day_start_local * 1000, "EEEEE")),
+                categories: daily.map(day => format(day.day_start_local * 1000, "EEEEEE")),
+                labels: {
+                    style: {
+                        color: '#ffffff'
+                    }
+                },
+                title: {
+                    style: {
+                        color: '#ffffff'
+                    }
+                }
+            },
+            plotOptions: {
+                columnrange: {
+                    borderRadius: '50%',
+                    dataLabels: {
+                        enabled: true,
+                        format: '{y}°'
+                    }
+                }
             },
             yAxis: [
                 { title: { text: 'Temperature' } },
@@ -151,13 +119,13 @@
 
     onMount(async () => {
         const Highcharts = await import("highcharts")
-        const ColumnRange = await import("highcharts/modules/columnrange")
+        const HighchartsMore = await import("highcharts/highcharts-more")
 
-        ColumnRange(Highcharts)
+        HighchartsMore.default(Highcharts)
         
         chart = Highcharts.chart(generateChartOptions());
 
-        setChartColor("#e2e2e2")
+        // setChartColor("#e2e2e2")
     })
     
     afterUpdate(async () => {
