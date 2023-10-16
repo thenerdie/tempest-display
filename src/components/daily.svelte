@@ -38,11 +38,18 @@
                 }
             },
             title: {
-                text: 'Forecast',
+                text: 'Daily Forecast',
                 style: {
                     "font-family": "Gabarito",
                     "color": "white"
                 }
+            },
+            legend: {
+                itemStyle: {
+                    color: '#ffffff',
+                    fontWeight: 'bold',
+                    fontSize: 10,
+                },
             },
             xAxis: {
                 categories: daily.map(day => format(day.day_start_local * 1000, "EEEEEE")),
@@ -62,12 +69,29 @@
                     borderRadius: '50%',
                     dataLabels: {
                         enabled: true,
-                        format: '{y}°'
+                        format: '{y}°',
+                        style: {
+                            "font-family": "Gabarito",
+                            "color": "white",
+                            "font-size": "24px",
+                        }
                     }
                 }
             },
             yAxis: [
-                { title: { text: 'Temperature' } },
+                {
+                    title: { text: 'Temperature' },
+                    labels: {
+                        style: {
+                            color: '#ffffff'
+                        }
+                    },
+                    title: {
+                        style: {
+                            color: '#ffffff'
+                        }
+                    }
+                },
             ],
             series: [
                 {

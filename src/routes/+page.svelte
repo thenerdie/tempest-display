@@ -122,7 +122,9 @@
         margin-left: auto;
         margin-right: auto;
         margin-bottom: 10px;
+        width: 100%;
         height: 50%;
+        gap: 50px;
     }
 
     hr {

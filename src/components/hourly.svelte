@@ -9,62 +9,8 @@
     let chart
     let render
 
-    function setChartColor(color) {
-        chart?.update({
-            chart: {
-                style: {
-                    color: color
-                }
-            },
-            title: {
-                style: {
-                    color: color
-                }
-            },
-            subtitle: {
-                style: {
-                    color: color
-                }
-            },
-            xAxis: {
-                labels: {
-                    style: {
-                        color: color
-                    }
-                },
-                title: {
-                    style: {
-                        color: color
-                    }
-                }
-            },
-            yAxis: {
-                labels: {
-                    style: {
-                        color: color
-                    }
-                    },
-                    title: {
-                    style: {
-                        color: color
-                    }
-                }
-            },
-            legend: {
-                itemStyle: {
-                    color: color
-                }
-            },
-            tooltip: {
-                style: {
-                    color: color
-                }
-            },
-        });
-    }
-
     function generateChartOptions() {
-        const HOURS = 24 * 2
+        const HOURS = 24 // your mother
 
         const chartOptions = {
             chart: {
@@ -84,35 +30,90 @@
             title: {
                 text: 'Hourly Forecast',
                 style: {
-                    "font-family": "Gabarito"
+                    "font-family": "Gabarito",
+                    "color": "#ffffff"
                 }
+            },
+            legend: {
+                itemStyle: {
+                    color: '#ffffff',
+                    fontWeight: 'bold',
+                    fontSize: 10,
+                },
             },
             xAxis: {
                 categories: hourly.map(hour => format(hour.time * 1000, "EEE h aa")).slice(0, HOURS),
                 tickInterval: 8,
+                labels: {
+                    style: {
+                        color: '#ffffff'
+                    }
+                },
+                title: {
+                    style: {
+                        color: '#ffffff'
+                    }
+                }
             },
             yAxis: [
-                { title: { text: 'Temperature' } },
                 {
+                    labels: {
+                        style: {
+                            color: '#ffffff'
+                        }
+                    },
                     title: {
-                        text: 'Humidity'
+                        text: 'Temperature',
+                        style: {
+                            color: '#ffffff'
+                        }
+                    }
+                },
+                {
+                    min: 0,
+                    max: 100,
+                    labels: {
+                        style: {
+                            color: '#ffffff'
+                        }
+                    },
+                    title: {
+                        text: 'Humidity',
+                        style: {
+                            color: '#ffffff'
+                        }
+                    }
+                },
+                {
+                    min: 0,
+                    max: 100,
+                    opposite: true,
+                    labels: {
+                        style: {
+                            color: '#ffffff'
+                        }
+                    },
+                    title: {
+                        text: 'Chance of Precipitation',
+                        style: {
+                            color: '#ffffff'
+                        }
+                    }
+                },
+                {
+                    min: 0,
+                    labels: {
+                        style: {
+                            color: '#ffffff'
+                        }
+                    },
+                    title: {
+                        text: 'Wind Speed',
+                        style: {
+                            color: '#ffffff'
+                        }
                     },
                     opposite: true,
-                    min: 0,
-                    max: 100,
-                },
-                {
-                    title: {
-                        text: 'Chance of Precipitation'
-                    },
-                    min: 0,
-                    max: 100,
-                },
-                {
-                    title: {
-                        text: 'Wind'
-                    },
-                    min: 0,
                 }
             ],
             series: [
@@ -227,8 +228,6 @@
         Highcharts3D.default(Highcharts)
         
         chart = Highcharts.chart(generateChartOptions());
-        
-        setChartColor("#e2e2e2")
     })
     
     afterUpdate(async () => {

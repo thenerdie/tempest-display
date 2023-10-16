@@ -118,7 +118,7 @@
                     tileSize: 256
                 },
                 paint: {
-                    "raster-opacity": 0.6,
+                    "raster-opacity": 0.4,
                 },
                 minzoom: 0,
                 maxzoom: 20,
@@ -155,6 +155,9 @@
             })
         }
 
+        // someone here hates apple
+        // thats crazy
+        // mrrrrrrrp~
         map.on('style.load', async () => {
             map.addSource('point', {
                 'type': 'geojson',
@@ -203,7 +206,8 @@
 
             refreshRadar()
         });
-        setInterval(refreshRadar, 60000);
+
+        setInterval(refreshRadar, 60000 * 5);
     });
 </script>
 
