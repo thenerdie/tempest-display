@@ -50,13 +50,14 @@
         <hr>
         <p>💧 {current?.relative_humidity}%</p>
         <hr>
-        <p>💨 {current?.wind_avg} MPH {current?.wind_direction_cardinal}</p>
+        <p>💨 {current?.wind_avg} MPH {current?.wind_direction_cardinal} (gust {current?.wind_gust} MPH)</p>
         <hr>
         <p>⏱️ {current?.station_pressure.toFixed(0)} mb</p>
     </div>
     
     <div id="forecast">
         <Hourly hourly={hourly}></Hourly>
+        <hr>
         <Daily daily={daily}></Daily>
     </div>
 </div>
@@ -100,7 +101,7 @@
     
     #conditions {
         margin-bottom: 0px;
-        font-size: 25px;
+        font-size: 20px;
         display: flex;
         flex-direction: row;
         margin-left: auto;
@@ -124,7 +125,7 @@
         margin-bottom: 10px;
         width: 100%;
         height: 50%;
-        gap: 50px;
+        gap: 30px;
     }
 
     hr {

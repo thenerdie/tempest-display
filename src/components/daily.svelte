@@ -80,13 +80,13 @@
             },
             yAxis: [
                 {
-                    title: { text: 'Temperature' },
                     labels: {
                         style: {
                             color: '#ffffff'
                         }
                     },
                     title: {
+                        text: 'Temperature',
                         style: {
                             color: '#ffffff'
                         }
