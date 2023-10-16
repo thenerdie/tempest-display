@@ -125,7 +125,7 @@
         margin-bottom: 10px;
         width: 100%;
         height: 50%;
-        gap: 30px;
+        gap: 10px;
     }
 
     hr {

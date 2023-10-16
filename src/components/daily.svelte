@@ -26,7 +26,7 @@
             chart: {
                 type: 'columnrange', 
                 renderTo: render,
-                backgroundColor: "#00000000",
+                backgroundColor: "#00000029",
                 style: {
                     color: "white"
                 },
