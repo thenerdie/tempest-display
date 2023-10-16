@@ -1,7 +1,8 @@
 <script>
-    import Radar from '../components/radar.svelte';
+    import Map from '../components/map.svelte';
     import Hourly from '../components/hourly.svelte';
     import Daily from '../components/daily.svelte'
+    import Current from "../components/current.svelte"
 
     import { getEmojiForCondition } from "$lib/utf8"
 
@@ -44,16 +45,9 @@
 </div>
 
 <div class="centered sky-gradient">
-    <Radar></Radar>
-    <div id="conditions">
-        <p>{getEmojiForCondition(current?.conditions)} {current?.air_temperature}°</p>
-        <hr>
-        <p>💧 {current?.relative_humidity}%</p>
-        <hr>
-        <p>💨 {current?.wind_avg} MPH {current?.wind_direction_cardinal} (gust {current?.wind_gust} MPH)</p>
-        <hr>
-        <p>⏱️ {current?.station_pressure.toFixed(0)} mb</p>
-    </div>
+    <Map></Map>
+
+    <Current current={current}></Current>
     
     <div id="forecast">
         <Hourly hourly={hourly}></Hourly>
@@ -98,20 +92,6 @@
     .centered {
         text-align: center;
     }
-    
-    #conditions {
-        margin-bottom: 0px;
-        font-size: 20px;
-        display: flex;
-        flex-direction: row;
-        margin-left: auto;
-        margin-right: auto;
-        justify-content: center;
-        width: fit-content;
-        gap: 15px;
-        margin-bottom: 15px;
-        margin-top: 10px;
-    }
 
     #forecast {
         display: flex;
@@ -123,7 +103,7 @@
         margin-left: auto;
         margin-right: auto;
         margin-bottom: 10px;
-        width: 100%;
+        width: 95%;
         height: 50%;
         gap: 10px;
     }
