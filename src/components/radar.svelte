@@ -13,7 +13,7 @@
 
     async function getCitiesByGeocode(lat, lon) {
         const radius = 170;
-        const maxRows = 300;
+        const maxRows = 500;
 
         try {
             const response = await axios.get(`http://api.geonames.org/findNearbyPlaceNameJSON?lat=${lat}&lng=${lon}&radius=${radius}&maxRows=${maxRows}&username=${import.meta.env.VITE_GEONAMES_KEY}`);
@@ -21,7 +21,7 @@
             let geonames = []
 
             response.data.geonames.forEach(geoname => {
-                if (geoname.population > 2000)
+                if (geoname.population > 8000)
                     geonames.push(geoname)
             })
 
@@ -59,7 +59,7 @@
             container: 'container',
             style: "mapbox://styles/mapbox/dark-v9",
             center: coordinates,
-            zoom: 11,
+            zoom: 10,
             pitch: 75,
             bearing: 0,
             interactive: false,
@@ -125,21 +125,6 @@
             });
 
             map.addLayer({
-                id: TEMP_LAYER_NAME,
-                type: "raster",
-                source: {
-                    type: "raster",
-                    tiles: [
-                        `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${import.meta.env.VITE_OWM_KEY}`
-                    ],
-                    tileSize: 256
-                },
-                paint: {
-                    "raster-opacity": 0.8,
-                },
-            })
-
-            map.addLayer({
                 id: CLOUDS_LAYER_NAME,
                 type: "raster",
                 source: {
@@ -152,6 +137,64 @@
                 paint: {
                     "raster-opacity": 0.3,
                 },
+            })
+
+            map.addLayer({
+                id: TEMP_LAYER_NAME,
+                type: "raster",
+                source: {
+                    type: "raster",
+                    tiles: [
+                        `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${import.meta.env.VITE_OWM_KEY}`
+                    ],
+                    tileSize: 256
+                },
+                paint: {
+                    "raster-opacity": 0.5,
+                },
+            })
+        }
+
+        let ids = []
+
+        async function refreshNearbyWeatherObservations() {
+            const observations = await getNearbyWeatherObservations(nearbyCities)
+
+            ids.forEach(id => {
+                map.removeLayer(id)
+                map.removeSource(id)
+            })
+
+            ids = []
+
+            observations.forEach(obs => {
+                const uid = `obs_${obs.location.name}`
+
+                ids.push(uid)
+
+                map.addSource(uid, {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [obs.location.lng, obs.location.lat]
+                        },
+                    }
+                });
+
+                map.addLayer({
+                    'id': uid,
+                    'type': 'symbol',
+                    'source': uid,
+                    'layout': {
+                        'text-field': Math.round(obs.weather.temperature_2m).toString() + "°", // The text you want to display
+                        'text-size': 20 // Text size
+                    },
+                    'paint': {
+                        'text-color': '#ffffff',
+                    }
+                });
             })
         }
 
@@ -173,40 +216,11 @@
                 }
             });
 
-            getNearbyWeatherObservations(nearbyCities).then(observations => {
-                observations.forEach(obs => {
-                    const uid = `obs_${obs.location.name}`
-
-                    map.addSource(uid, {
-                        type: 'geojson',
-                        data: {
-                            type: 'Feature',
-                            geometry: {
-                                type: 'Point',
-                                coordinates: [obs.location.lng, obs.location.lat]
-                            },
-                        }
-                    });
-
-                    map.addLayer({
-                        'id': uid,
-                        'type': 'symbol',
-                        'source': uid,
-                        'layout': {
-                            'text-field': Math.round(obs.weather.temperature_2m).toString() + "°", // The text you want to display
-                            'text-size': 20 // Text size
-                        },
-                        'paint': {
-                            'text-color': '#ffffff',
-                        }
-                    });
-                })
-            })
-
-
+            refreshNearbyWeatherObservations()
             refreshRadar()
         });
 
+        setInterval(refreshNearbyWeatherObservations, 60000 * 5)
         setInterval(refreshRadar, 60000 * 5);
     });
 </script>

@@ -92,11 +92,27 @@
                         }
                     }
                 },
+                {
+                    labels: {
+                        style: {
+                            color: '#ffffff'
+                        }
+                    },
+                    title: {
+                        text: 'Chance of Precipitation',
+                        style: {
+                            color: '#ffffff'
+                        }
+                    },
+                    min: 0,
+                    max: 100,
+                },
             ],
             series: [
                 {
                     name: 'Temperature',
-                    data: daily.map(day => [ day.air_temp_low, day.air_temp_high ])
+                    data: daily.map(day => [ day.air_temp_low, day.air_temp_high ]),
+                    yAxis: 0,
                 },
                 // {
                 //     name: 'Humidity',
@@ -109,20 +125,20 @@
                 //     depth: 75,
                 //     zIndex: 1,
                 // },
-                // {
-                //     name: 'Chance of Precipitation',
-                //     type: "areaspline",
-                //     data: hourly.map(hour => hour.precip_probability).slice(0, HOURS),
-                //     lineWidth: 5,
-                //     marker: {
-                //         enabled: false,
-                //     },
-                //     color: "#59eeff",
-                //     fillColor: "#46c1cf",
-                //     yAxis: 2,
-                //     depth: 75,
-                //     zIndex: 2,
-                // },
+                {
+                    name: 'Chance of Precipitation',
+                    type: "areaspline",
+                    data: daily.map(day => day.precip_probability),
+                    lineWidth: 5,
+                    marker: {
+                        enabled: false,
+                    },
+                    color: "#59eeff",
+                    fillColor: "#46c1cf",
+                    yAxis: 1,
+                    depth: 75,
+                    zIndex: 0,
+                },
                 // {
                 //     name: 'Wind',
                 //     data: hourly.map(hour => hour.wind_avg).slice(0, HOURS),
